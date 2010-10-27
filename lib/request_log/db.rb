@@ -7,7 +7,7 @@ module RequestLog
     end
     
     def self.mongo_db
-      @@mongo_db ||= default_mongo_db
+      @@mongo_db
     end
     
     def self.requests
@@ -30,17 +30,6 @@ module RequestLog
         puts printable_request(request)
         puts
       end
-    end
-    
-    private
-    
-    def self.default_mongo_db
-      return nil unless ENV['MONGOHQ_URL']
-      require 'uri'
-      require 'mongo'      
-      uri = URI.parse(ENV['MONGOHQ_URL'])
-      connection = Mongo::Connection.from_uri(uri.to_s)
-      connection.db(uri.path.gsub(/^\//, ''))
     end
   end
 end

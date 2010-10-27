@@ -1,8 +1,8 @@
 require 'bundler'
 Bundler::GemHelper.install_tasks
+Bundler.require
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |t|
-  puts Dir.glob('spec/**/*_spec.rb').inspect
-  t.spec_files = Dir.glob('spec/**/*_spec.rb')
-end
+require 'rspec/core'
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:default)

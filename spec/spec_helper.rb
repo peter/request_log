@@ -1,7 +1,5 @@
-require 'rubygems'
-require 'mocha'
-require 'rack'
-require 'rspec'
+require 'bundler'
+Bundler.require(:development)
 
 $:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 require 'request_log'
