@@ -1,0 +1,5 @@
+require 'request_log/version'
+require 'request_log/db'
+require 'request_log/data'
+require 'request_log/profiler'
+require 'request_log/middleware'
