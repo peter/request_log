@@ -54,6 +54,20 @@ describe RequestLog::Profiler do
         profiler.failure_exceptions.should == {"RuntimeError" => 1, "Timeout::Error" => 2}
       end
     end    
+
+    describe "persist!" do
+      it "does not get invoked if should_persist? == false" do
+        profiler.stubs(:should_persist?).returns(false)
+        profiler.expects(:persist!).never
+        profiler.call(:result => :success, :elapsed_time => 0.6)
+      end
+
+      it "does get invoked if should_persist? == true" do
+        profiler.stubs(:should_persist?).returns(true)        
+        profiler.expects(:persist!).once
+        profiler.call(:result => :success, :elapsed_time => 0.6)
+      end
+    end
   end
   
   describe "total_count" do
@@ -78,6 +92,69 @@ describe RequestLog::Profiler do
       profiler.success_count = 9
       profiler.failure_ratio.should == 0.1
     end
+  end
+
+  describe "persist!" do
+    it "stores profiling info in mongo db" do
+      profiler.success_count = 80
+      profiler.failure_count = 20
+      profiler.avg_time = 0.0003
+      profiler.max_time = 0.09
+      profiling = mock('profiling')
+      profiling.expects(:insert).with(
+        :total_count => profiler.total_count,
+        :failure_ratio => profiler.failure_ratio,
+        :max_time => profiler.max_time,
+        :avg_time => profiler.avg_time,
+        :data => profiler.attributes
+      )
+      RequestLog::Db.expects(:profiling).returns(profiling)
+      profiler.persist!
+    end
+  end
+
+  describe "persist_enabled" do
+    it "defaults to false" do
+      profiler.reset.persist_enabled.should == false
+    end
+    
+    it "can be set to true" do
+      profiler.persist_enabled = true
+      profiler.persist_enabled.should == true      
+    end
+  end
+
+  describe "should_persist?" do
+    before(:each) do
+      profiler.persist_enabled = true
+    end
+    
+    it "returns true if total_count % persist_frequency == 0" do
+      profiler.persist_frequency = 10
+      profiler.success_count = 5
+      profiler.failure_count = 5
+      profiler.should_persist?.should be_true
+      
+      profiler.persist_frequency = 3
+      profiler.success_count = 80
+      profiler.failure_count = 10
+      profiler.should_persist?.should be_true      
+    end
+
+    it "returns false if total_count % persist_frequency != 0" do
+      profiler.persist_frequency = 3
+      profiler.success_count = 5
+      profiler.failure_count = 5
+      profiler.should_persist?.should be_false
+    end
+
+    it "returns false if persist_enabled = false" do
+      profiler.persist_frequency = 10
+      profiler.success_count = 5
+      profiler.failure_count = 5
+      profiler.persist_enabled = false
+      profiler.should_persist?.should be_false
+    end    
   end
 
   describe "attribute_names" do
@@ -114,6 +191,8 @@ describe RequestLog::Profiler do
       end      
     end
   end
+  
+  
   
   def profiler
     RequestLog::Profiler

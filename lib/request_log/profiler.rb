@@ -7,7 +7,9 @@ module RequestLog
         :failure_exceptions => {},
         :min_time => nil,
         :max_time => nil,
-        :avg_time => nil
+        :avg_time => nil,
+        :persist_enabled => false,
+        :persist_frequency => 2000
       }
     end
 
@@ -34,6 +36,7 @@ module RequestLog
       attribute_names.each do |attribute|
         send("#{attribute}=", default_values[attribute])
       end
+      self
     end
 
     reset
@@ -49,6 +52,7 @@ module RequestLog
           failure_exceptions[options[:exception].class.name] += 1
         end
       end
+      persist! if should_persist?
     end
 
     def self.total_count
@@ -64,6 +68,20 @@ module RequestLog
         hash[attribute] = send(attribute)
         hash
       end
+    end
+
+    def self.persist!
+      ::RequestLog::Db.profiling.insert(
+        :total_count => total_count,
+        :failure_ratio => failure_ratio,
+        :max_time => max_time,
+        :avg_time => avg_time,
+        :data => attributes
+      )
+    end
+
+    def self.should_persist?
+      persist_enabled && (total_count % persist_frequency == 0)
     end
 
     def self.to_s

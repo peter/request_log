@@ -14,6 +14,10 @@ module RequestLog
       mongo_db['requests']
     end
     
+    def self.profiling
+      mongo_db['request_log_profiling']
+    end
+    
     def self.printable_request(request)
       request.keys.map do |key|
         "#{key}: #{request[key].inspect}"
