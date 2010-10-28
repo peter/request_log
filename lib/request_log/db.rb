@@ -24,13 +24,15 @@ module RequestLog
       end.join("\n")
     end
 
-    def self.filtered_requests(start_time, end_time, condition = {})
-      time_condition = {"time" => {"$gt" => Time.parse(start_time).utc, "$lt" => Time.parse(end_time).utc}}
-      requests.find(time_condition.merge(condition))
+    def self.filtered_requests(start_time, end_time, conditions = {})
+      start_time = Time.parse(start_time).utc if start_time.is_a?(String)
+      end_time = Time.parse(end_time).utc if end_time.is_a?(String)
+      time_condition = {"time" => {"$gt" => start_time, "$lt" => end_time}}
+      requests.find(time_condition.merge(conditions))
     end
     
-    def self.print_requests(start_time, end_time, condition = {})
-      filtered_requests(start_time, end_time, condition).each do |request|
+    def self.print_requests(start_time, end_time, conditions = {})
+      filtered_requests(start_time, end_time, conditions).each do |request|
         puts printable_request(request)
         puts
       end
