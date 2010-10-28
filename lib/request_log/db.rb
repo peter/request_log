@@ -19,7 +19,7 @@ module RequestLog
     end
     
     def self.printable_request(request)
-      request.keys.map do |key|
+      request.keys.reject { |key| key == "_id" }.map do |key|
         "#{key}: #{request[key].inspect}"
       end.join("\n")
     end

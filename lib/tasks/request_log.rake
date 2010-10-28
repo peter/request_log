@@ -8,8 +8,8 @@ namespace :request_log do
     while(true)
       RequestLog::Db.requests.find("time" => {"$gt" => (Time.now - wait_time).utc}).each do |r|
         unless printed_ids.include?(r['_id'])
-          puts RequestLog::Db.printable_request(r)
           puts
+          puts RequestLog::Db.printable_request(r)
           printed_ids << r['_id']
         end
       end

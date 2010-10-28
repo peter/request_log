@@ -4,59 +4,70 @@ Request Log is a Rack middleware for logging web requests to MongoDB. Each web r
 with fields like path, method, params, status, time, ip, runtime etc.
 The gem offers support for monitoring the time overhead (usually very small) that the logging incurs.
 The advantages of logging to MongoDB over logging to a plain text file are huge because of the query
-capabilities of MongoDB.
+capabilities of MongoDB. Here is an example of what a log document can look like:
+
+  summary: "GET / - 200 0.000303"
+  method: "GET"
+  path: "/"
+  ip: "10.218.1.177"
+  time: 2010-10-28 21:43:38 UTC
+  params: {"hello_world"=>"1"}
+  status: 200
+  runtime: 0.000303
+
+You can easily customize which fields are stored in the log.
 
 == Installation
 
 Add gem dependencies with appropriate version numbers to your Gemfile (assuming you use Bundler):
 
-gem 'mongo', '~> <latest-version-here>'
-gem 'bson_ext', '~> <latest-version-here>'
-gem 'request_log', :git => "http://github.com/peter/request_log.git"
+  gem 'mongo', '~> <latest-version-here>'
+  gem 'bson_ext', '~> <latest-version-here>'
+  gem 'request_log', :git => "http://github.com/peter/request_log.git"
 
 Install with:
 
-bundle install
+  bundle install
 
 Note that it's up to your application how it wants to connect to MongoDB (if at all) and the suggested
 mongo and bson_ext gems are just suggestions.
 
-Next you need to setup a MongoDB connection. Here is a MongoHQ example that in Rails could end up in config/initializers/request_log.rb:
+Next you need to setup a MongoDB connection. Here is a MongoHQ example that in Rails would belong in config/initializers/request_log.rb:
 
-if ENV['MONGOHQ_URL']
-	require 'uri'
-	require 'mongo'      
-	uri = URI.parse(ENV['MONGOHQ_URL'])
-	connection = Mongo::Connection.from_uri(uri.to_s)
-	RequestLog::Db.mongo_db = connection.db(uri.path.gsub(/^\//, ''))
-end
+  if ENV['MONGOHQ_URL']
+	  require 'uri'
+	  require 'mongo'      
+	  uri = URI.parse(ENV['MONGOHQ_URL'])
+	  connection = Mongo::Connection.from_uri(uri.to_s)
+	  RequestLog::Db.mongo_db = connection.db(uri.path.gsub(/^\//, ''))
+  end
 
 Now setup the Middleware in your config.ru file:
 
-use RequestLog::Middleware
+  use RequestLog::Middleware
 
 Here is an example of how you can customize the middleware:
 
-use RequestLog::Middleware,
-	:logger => lambda { |data| ::RequestLog::Db.requests.insert(data.attributes.except(:summary)) },
-	:timeout => 0.5
+  use RequestLog::Middleware,
+	  :logger => lambda { |data| ::RequestLog::Db.requests.insert(data.attributes.except(:summary)) },
+	  :timeout => 0.5
 
 In order to use the Rake tasks you need to make sure you have the MongoDB connection setup and that you
 require the tasks in your Rakefile, like this:
 
-require 'request_log'
-require 'config/initializers/request_log.rb' # The file where you setup the mongo db connection
-require 'request_log/tasks'
+  require 'request_log'
+  require 'config/initializers/request_log.rb' # The file where you setup the mongo db connection
+  require 'request_log/tasks'
 
 == Accessing the logs
 
 You can tail the log like this:
 
-rake request_log:tail
+  rake request_log:tail
 
 If you want to query the log and print a certain time period you can use request_log:print:
 
-rake request_log:print from="2010-10-28 17:06:08" to="2010-10-28 17:06:10" conditions='status: 200'
+  rake request_log:print from="2010-10-28 17:06:08" to="2010-10-28 17:06:10" conditions='status: 200'
 
 If you are using MONGOHQ, remember to set the MONGOHQ_URL environment variable.
 
@@ -66,7 +77,7 @@ To monitor the time consumption and reliability of the MongoDB logging you can u
 It records number of failed and successful loggings, average and maximum logging times etc. To persist the profiling
 information to MongoDB you can configure the profiler like this:
 
-RequestLog::Profiler.persist_enabled = true
-RequestLog::Profiler.persist_frequency = 1000 # persist profiling info every 1000 requests
+  RequestLog::Profiler.persist_enabled = true
+  RequestLog::Profiler.persist_frequency = 1000 # persist profiling info every 1000 requests
 
 The profiling info will then be written to a table (request_log_profiling) in the MongoDB database.
