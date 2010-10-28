@@ -1,6 +1,10 @@
 = Request Log - Logging of web requests to MongoDB
 
-Request Log is a Rack middleware for logging web requests to MongoDB.
+Request Log is a Rack middleware for logging web requests to MongoDB. Each web request becomes a document in MongoDB
+with fields like path, method, params, status, time, ip, runtime etc.
+The gem offers support for monitoring the time overhead (usually very small) that the logging incurs.
+The advantages of logging to MongoDB over logging to a plain text file are huge because of the query
+capabilities of MongoDB.
 
 == Installation
 
@@ -14,10 +18,10 @@ Install with:
 
 bundle install
 
-Note that it's up to your application how it wants to connect to Mongo DB (if at all) and the suggested
+Note that it's up to your application how it wants to connect to MongoDB (if at all) and the suggested
 mongo and bson_ext gems are just suggestions.
 
-Next you need to setup a Mongo DB connection. Here is a MongoHQ example that in Rails could end up in config/initializers/request_log.rb:
+Next you need to setup a MongoDB connection. Here is a MongoHQ example that in Rails could end up in config/initializers/request_log.rb:
 
 if ENV['MONGOHQ_URL']
 	require 'uri'
@@ -37,7 +41,7 @@ use RequestLog::Middleware,
 	:logger => lambda { |data| ::RequestLog::Db.requests.insert(data.attributes.except(:summary)) },
 	:timeout => 0.5
 
-In order to use the Rake tasks you need to make sure you have the Mongo DB connection setup and that you
+In order to use the Rake tasks you need to make sure you have the MongoDB connection setup and that you
 require the tasks in your Rakefile, like this:
 
 require 'request_log'
@@ -55,3 +59,14 @@ If you want to query the log and print a certain time period you can use request
 rake request_log:print from="2010-10-28 17:06:08" to="2010-10-28 17:06:10" conditions='status: 200'
 
 If you are using MONGOHQ, remember to set the MONGOHQ_URL environment variable.
+
+== Profiling
+
+To monitor the time consumption and reliability of the MongoDB logging you can use the RequestLog::Profiler class.
+It records number of failed and successful loggings, average and maximum logging times etc. To persist the profiling
+information to MongoDB you can configure the profiler like this:
+
+RequestLog::Profiler.persist_enabled = true
+RequestLog::Profiler.persist_frequency = 1000 # persist profiling info every 1000 requests
+
+The profiling info will then be written to a table (request_log_profiling) in the MongoDB database.
