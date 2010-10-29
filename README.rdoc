@@ -21,9 +21,9 @@ You can easily customize which fields are stored in the log.
 
 Add gem dependencies with appropriate version numbers to your Gemfile (assuming you use Bundler):
 
-  gem 'mongo', '~> <latest-version-here>'
-  gem 'bson_ext', '~> <latest-version-here>'
-  gem 'request_log', :git => "http://github.com/peter/request_log.git"
+  gem 'mongo', '~> version known to work'
+  gem 'bson_ext', '~> version known to work'
+  gem 'request_log', '~> version known to work'
 
 Install with:
 
