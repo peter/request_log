@@ -42,6 +42,10 @@ Next you need to setup a MongoDB connection. Here is a MongoHQ example that in R
 	  RequestLog::Db.mongo_db = connection.db(uri.path.gsub(/^\//, ''))
   end
 
+MongoDB recommends using capped collections for logging as they have good write performance. Here is an example of how to do log rotation when the size hits 20GB (this step is optional, note that the command make take a while):
+
+  RequestLog::Db.mongo_db.create_collection("requests", :capped => true, :size => 20000000000)
+
 Now setup the Middleware in your config.ru file:
 
   use RequestLog::Middleware
