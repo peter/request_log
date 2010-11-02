@@ -6,7 +6,6 @@ The gem offers support for monitoring the time overhead (usually very small) tha
 The advantages of logging to MongoDB over logging to a plain text file are huge because of the query
 capabilities of MongoDB. Here is an example of what a log document can look like:
 
-  summary: "GET / - 200 0.000303"
   method: "GET"
   path: "/"
   ip: "10.218.1.177"
@@ -53,7 +52,7 @@ Now setup the Middleware in your config.ru file:
 Here is an example of how you can customize the middleware:
 
   use RequestLog::Middleware,
-	  :logger => lambda { |data| ::RequestLog::Db.requests.insert(data.attributes.except(:summary)) },
+	  :logger => lambda { |data| RequestLog::Db.requests.insert(data.attributes.except(:runtime)) },
 	  :timeout => 0.5
 
 In order to use the Rake tasks you need to make sure you have the MongoDB connection setup and that you
