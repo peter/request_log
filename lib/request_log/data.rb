@@ -18,14 +18,13 @@ module RequestLog
       method       = env['REQUEST_METHOD']
       path         = self.class.request_path(env)
       {
-        :summary           => "#{method} #{path} - #{status} #{app_time}", 
         :method            => method,
         :path              => path, 
-        :ip                => env['REMOTE_ADDR'],
-        :time              => Time.now.utc,
-        :params            => params,
         :status            => status, 
-        :runtime           => app_time
+        :time              => Time.now.utc,
+        :runtime           => app_time,
+        :ip                => env['REMOTE_ADDR'],
+        :params            => params
       }
     end
     

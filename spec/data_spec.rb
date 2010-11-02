@@ -12,8 +12,8 @@ describe RequestLog::Data do
     it "returns a hash with information about a request" do
       puts "running spec"
       attributes = @data.attributes
-      attributes[:summary].should =~ %r{GET /images/logo.png - 200 \d+\.\d+}
-      attributes[:runtime].to_s.should == attributes[:summary][/\d+\.\d+$/]
+      attributes[:summary].should be_nil
+      attributes[:runtime].should == @app_time
       attributes[:time].should >= (Time.now-1).utc
       attributes[:time].should <= Time.now.utc
       attributes[:method].should == "GET"
