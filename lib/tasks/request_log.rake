@@ -6,7 +6,9 @@ namespace :request_log do
     wait_time = 10
     printed_ids = Set.new
     while(true)
-      RequestLog::Db.requests.find("time" => {"$gt" => (Time.now - wait_time).utc}).each do |r|
+      time_condition = {"time" => {"$gt" => (Time.now - wait_time).utc}}
+      filter_conditions = RequestLog::Db.parse_conditions(ENV['conditions'])
+      RequestLog::Db.requests.find(filter_conditions.merge(time_condition)).each do |r|
         unless printed_ids.include?(r['_id'])
           puts
           puts RequestLog::Db.printable_request(r)
@@ -21,13 +23,6 @@ namespace :request_log do
   task :print do
     from = ENV['from'] || (Time.now-600).utc
     to = ENV['to'] || Time.now.utc
-    if conditions = ENV['conditions']
-      # We need to parse a Ruby hash here, let's not require braces
-      conditions = "{#{conditions}}" unless conditions[0] == "{"
-      conditions = eval(conditions)
-    else
-      conditions = {}
-    end
-    RequestLog::Db.print_requests(from, to, conditions)
+    RequestLog::Db.print_requests(from, to, ENV['conditions'])
   end
 end
