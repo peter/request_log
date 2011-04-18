@@ -49,18 +49,28 @@ Now setup the Middleware in your config.ru file:
 
   use RequestLog::Middleware
 
-Here is an example of how you can customize the middleware:
-
-  use RequestLog::Middleware,
-	  :logger => lambda { |data| RequestLog::Db.requests.insert(data.attributes.except(:runtime)) },
-	  :timeout => 0.5
-
 In order to use the Rake tasks you need to make sure you have the MongoDB connection setup and that you
 require the tasks in your Rakefile, like this:
 
   require 'request_log'
   require 'config/initializers/request_log.rb' # The file where you setup the mongo db connection
   require 'request_log/tasks'
+
+== Customizing the middleware
+
+Here is an example of how you can customize the middleware:
+
+  use RequestLog::Middleware,
+	  :logger => lambda { |data| RequestLog::Db.requests.insert(data.attributes.except(:runtime)) },
+	  :timeout => 0.5
+
+Here are available options RequestLog::Middleware will respect:
+
+  options[:logger]    - set a custom lambda determining which data attributes are logged
+  options[:profiler]
+  options[:timeout]   - set a custom timeout for a given RequestLog log operation
+  options[:only_path] - specify a regexp to whitelist REQUEST_PATHs
+  options[:skip_path] - specify a regexp to blacklist REQUEST_PATHs
 
 == Accessing the logs
 

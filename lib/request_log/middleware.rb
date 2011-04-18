@@ -6,10 +6,11 @@ module RequestLog
       @profiler = options[:profiler] || ::RequestLog::Profiler
       @timeout = options[:timeout] || 0.3
       @only_path = options[:only_path]
+      @skip_path = options[:skip_path]
     end
 
     def call(env)
-      app_start = Time.now 
+      app_start = Time.now
       rack_response = @app.call(env)
       app_time = Time.now - app_start
       return rack_response unless should_log?(env)
@@ -23,18 +24,17 @@ module RequestLog
         @profiler.call(:result => :failure, :exception => e)
         $stderr.puts("#{self.class}: exception #{e} #{e.backtrace.join("\n")}")
       ensure
-        return rack_response  
+        return rack_response
       end
     end
-    
+
     private
-    
+
     def should_log?(env)
-      if @only_path && ::RequestLog::Data.request_path(env) !~ @only_path
-        false
-      else
-        true
-      end
+      ignored_by_only = @only_path && ::RequestLog::Data.request_path(env) !~ @only_path
+      ignored_by_skip = @skip_path && !!(::RequestLog::Data.request_path(env) =~ @skip_path)
+
+      !(ignored_by_only || ignored_by_skip)
     end
   end
 end
