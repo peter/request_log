@@ -1,4 +1,4 @@
-= Request Log
+# Request Log
 
 Request Log is a Rack middleware for logging web requests to MongoDB. Each web request becomes a document in MongoDB
 with fields like path, method, params, status, time, ip, runtime etc.
@@ -6,6 +6,7 @@ The gem offers support for monitoring the time overhead (usually very small) tha
 The advantages of logging to MongoDB over logging to a plain text file are huge because of the query
 capabilities of MongoDB. Here is an example of what a log document can look like:
 
+```
   method: "GET"
   path: "/"
   ip: "10.218.1.177"
@@ -13,26 +14,32 @@ capabilities of MongoDB. Here is an example of what a log document can look like
   params: {"hello_world"=>"1"}
   status: 200
   runtime: 0.000303
+```
 
 You can easily customize which fields are stored in the log.
 
-== Installation
+## Installation
 
 Add gem dependencies with appropriate version numbers to your Gemfile (assuming you use Bundler):
 
+```
   gem 'mongo', '~> version known to work'
   gem 'bson_ext', '~> version known to work'
   gem 'request_log', '~> version known to work'
+```
 
 Install with:
 
+```
   bundle install
+```
 
 Note that it's up to your application how it wants to connect to MongoDB (if at all) and the suggested
 mongo and bson_ext gems are just suggestions.
 
 Next you need to setup a MongoDB connection. Here is a MongoHQ example that in Rails would belong in config/initializers/request_log.rb:
 
+```
   if ENV['MONGOHQ_URL']
 	  require 'uri'
 	  require 'mongo'      
@@ -40,47 +47,62 @@ Next you need to setup a MongoDB connection. Here is a MongoHQ example that in R
 	  connection = Mongo::Connection.from_uri(uri.to_s)
 	  RequestLog::Db.mongo_db = connection.db(uri.path.gsub(/^\//, ''))
   end
+```
 
 MongoDB recommends using capped collections for logging as they have good write performance. Here is an example of how to do log rotation when the size hits 20GB (this step is optional, note that the command may take a while):
 
+```
   RequestLog::Db.mongo_db.create_collection("requests", :capped => true, :size => 20000000000)
+```
 
 Now setup the Middleware in your config.ru file:
 
+```
   use RequestLog::Middleware
+```
 
 Here is an example of how you can customize the middleware:
 
+```
   use RequestLog::Middleware,
 	  :logger => lambda { |data| RequestLog::Db.requests.insert(data.attributes.except(:runtime)) },
 	  :timeout => 0.5
+```
 
 In order to use the Rake tasks you need to make sure you have the MongoDB connection setup and that you
 require the tasks in your Rakefile, like this:
 
+```
   require 'request_log'
   require 'config/initializers/request_log.rb' # The file where you setup the mongo db connection
   require 'request_log/tasks'
+```
 
-== Accessing the logs
+## Accessing the logs
 
 You can tail the log like this:
 
+```
   rake request_log:tail
+```
 
 If you want to query the log and print a certain time period you can use request_log:print:
 
+```
   rake request_log:print from="2010-10-28 17:06:08" to="2010-10-28 17:06:10" conditions='status: 200'
+```
 
 If you are using MONGOHQ, remember to set the MONGOHQ_URL environment variable.
 
-== Profiling
+## Profiling
 
 To monitor the time consumption and reliability of the MongoDB logging you can use the RequestLog::Profiler class.
 It records number of failed and successful loggings, average and maximum logging times etc. To persist the profiling
 information to MongoDB you can configure the profiler like this:
 
+```
   RequestLog::Profiler.persist_enabled = true
   RequestLog::Profiler.persist_frequency = 1000 # persist profiling info every 1000 requests
+```
 
 The profiling info will then be written to a table (request_log_profiling) in the MongoDB database.

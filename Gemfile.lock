@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    request_log (0.1.0)
+    request_log (0.1.2)
 
 GEM
   remote: http://rubygems.org/

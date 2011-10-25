@@ -1,3 +1,4 @@
+require 'timeout'
 require 'request_log/version'
 require 'request_log/db'
 require 'request_log/data'

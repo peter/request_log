@@ -1,7 +1,0 @@
-* 0.1.0
-
-* Removed summary field from log data since it only contained redundant data and we want to trim the size of the log.
-
-* 0.0.1
-
-* Initial version

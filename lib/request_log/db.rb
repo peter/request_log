@@ -28,7 +28,7 @@ module RequestLog
       start_time = Time.parse(start_time).utc if start_time.is_a?(String)
       end_time = Time.parse(end_time).utc if end_time.is_a?(String)
       time_condition = {"time" => {"$gt" => start_time, "$lt" => end_time}}
-      requests.find(time_condition.merge(parse_conditions(conditions)))
+      requests.find(time_condition.merge(parse_conditions(conditions))).sort([:time, :ascending])
     end
     
     def self.print_requests(start_time, end_time, conditions = {})
