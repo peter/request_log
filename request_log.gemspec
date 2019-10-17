@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   
   s.add_development_dependency "rspec", "2.0.0"
   s.add_development_dependency "mocha", "~> 0.9.8"
-  s.add_development_dependency "rack", "~> 1.2.1"
+  s.add_development_dependency "rack", "~> 2.0.7"
 end
